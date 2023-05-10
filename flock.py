@@ -12,27 +12,18 @@ SCREEN_WIDTH, SCREEN_HEIGHT = device_screen.current_w-100, device_screen.current
 
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-
-
-# # Update the display
-# pygame.display.update()
-
 # two-dimensional vector class
 class vector():
-    def __init__(self, x, y):
+    def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
-            
-        self.angle = None
-    
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-    
-    def random2D(self):
-        angle = random.uniform(0.0, 2.0 * math.pi)
-        x = 1 * math.cos(angle)
-        y = 1 * math.sin(angle)
+
+    # creates Vector object with a random direction and magnitude of 1
+    def random2D():
+        angle = random.uniform(0.0, 2.0 * math.pi)      # generates an angle between 0 and 2pi 
+
+        x = math.cos(angle)     # cos and sin of angle theta ensure unit vector 
+        y = math.sin(angle)
 
         return vector(x, y)
 
@@ -40,69 +31,56 @@ class vector():
         self.x -= vector.x
         self.y -= vector.y
 
-    def sub(vector1, vector2):
-        return vector(vector1.x - vector2.x , vector1.y - vector2.y)
-
     def add(self, vector):
-        if self.y != None and self.x != None:
             self.x += vector.x
             self.y += vector.y
-        else:
-            self.x = vector.x
-            self.y = vector.y
 
-    def dist(self, vector):
-        return math.sqrt(math.pow(vector.x - self.x, 2) + math.pow(vector.y - self.y, 2))
+    def dist(self, vector2):
+        return math.sqrt((vector2.x - self.x)**2 + (vector2.y - self.y)**2)
     
-    # static method
-    def dist(vector1, vector2):
-        return math.sqrt(math.pow(vector2.position.x - vector1.position.x, 2) + math.pow(vector2.position.y - vector1.position.y, 2))
-
     def div(self, scalar):
         self.x = self.x / scalar
         self.y = self.y / scalar
 
-    # unit vector * magnitude = desired magnitude 
+    # sets vector magnitude by specified value. calculates the unit vector * magnitude 
     def setMag(self, magnitude):
-        pass 
 
-    def calc_magnitude(self):
-        return math.sqrt(math.pow(self.x, 2) + math.pow(self.y, 2))
+        self.x = (self.x / self.mag()) * magnitude 
+        self.y = (self.y / self.mag()) * magnitude
+    
+    # returns the calculated magnitude of the vector
+    def mag(self):
+        if self.x == 0 and self.y == 0:
+            return 1
+        else:
+            return math.sqrt(self.x**2 + self.y**2)
     
     # scale vector to have a magnitude of 1 
     def normalize(self):
-        if self.x != None or self.y != None:
-            self.x = self.x / self.calc_magnitude()
-            self.y = self.y / self.calc_magnitude()
-        else:
-            self.x = 1
-            self.y = 1
+        self.x = self.x / self.mag()
+        self.y = self.y / self.mag()
     
+    #limits the magnitude (length) of a vector to a specified maximum value.
     def limit(self, limit):
-        pass
+        if self.mag() > limit:
+            self.setMag(limit)
     
 
 class Boid:
     def __init__(self):
 
         self.position = vector(random.randrange(0, SCREEN_WIDTH), random.randrange(0, SCREEN_HEIGHT)) 
-        self.velocity = vector(random.randrange(1,4),random.randrange(1,4))         #vector(random.randrange(1, 5),  random.randrange(1, 5))
+        self.velocity = vector.random2D() #vector(random.randrange(1, 5),  random.randrange(1, 5)) 
+        self.velocity.setMag(random.randrange(2,4))
         self.acceleration = vector(0,0)
-
-
-        # self.angle = random.uniform(0.0, 2.0 * math.pi)
     
-        self.img = pygame.transform.scale(pygame.image.load('Penguins/TenderBud/idle/0.png'), (40,40))
+        self.img = pygame.transform.scale(pygame.image.load('Penguins/TenderBud/idle/0.png'), (15,15))
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         
         self.maxspeed = 4
-        self.maxforce = 0.1
+        self.maxforce = 0.2
 
-    def applyForce(self, force):
-        self.acceleration.x = force
-        self.acceleration.y = force
-    
     def draw(self):
         if self.position.x > SCREEN_WIDTH:
             self.position.x = 0
@@ -113,7 +91,6 @@ class Boid:
         elif self.position.y < 0 :
             self.position.y = SCREEN_HEIGHT
 
-        
         SCREEN.blit(self.img ,(self.position.x, self.position.y))
 
     def update(self):
@@ -121,14 +98,14 @@ class Boid:
         self.velocity.add(self.acceleration)
 
     def align(self, boids):
-        perception = 100
+        perception = 50
         steering = vector()
         total = 0 
 
         for boid in boids:
-            distance = vector.dist(self, boid)
-
-            if distance > 0 and distance < perception:
+            distance = vector.dist(self.position, boid.position)
+            
+            if boid != self and distance < perception:
                 steering.add(boid.velocity)
                 total += 1
         
@@ -138,23 +115,21 @@ class Boid:
             steering.setMag(self.maxspeed)
             steering.sub(self.velocity)
             steering.limit(self.maxforce)
-
+        
         return steering
-
+       
     def flock(self, boids):
         alignment = self.align(boids)
-        self.acceleration = alignment
-
-        print(self.acceleration.x)
+        self.acceleration = alignment       # F = MA -> A = F
 
 def main():
 
     clock = pygame.time.Clock()
-    FPS = 25
+    FPS = 30
     run = True 
 
     boids = []
-    for boid in range(25):
+    for boid in range(300):
         boids.append(Boid())
 
     while run:
@@ -164,10 +139,10 @@ def main():
                 run = False
                 pygame.quit()
 
-        SCREEN.fill((255,255,255))
+        SCREEN.fill((0,0,0))
         # keys_pressed = pygame.key.get_pressed()
 
-        # put the image onto the screen
+        #put the image onto the screen
         for boid in boids:
             boid.flock(boids)
             boid.update()
@@ -176,4 +151,5 @@ def main():
         clock.tick(FPS)
         pygame.display.update()
 
-main()
+if __name__ == "__main__":
+    main()
