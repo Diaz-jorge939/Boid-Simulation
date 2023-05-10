@@ -19,13 +19,22 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # two-dimensional vector class
 class vector():
-    def __init__(self, x= None, y=None, z=None):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.z = z
-
-        self.mag = None
+            
         self.angle = None
+    
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+    
+    def random2D(self):
+        angle = random.uniform(0.0, 2.0 * math.pi)
+        x = 1 * math.cos(angle)
+        y = 1 * math.sin(angle)
+
+        return vector(x, y)
 
     def sub(self, vector):
         self.x -= vector.x
@@ -34,13 +43,13 @@ class vector():
     def sub(vector1, vector2):
         return vector(vector1.x - vector2.x , vector1.y - vector2.y)
 
-    def add(self, v):
+    def add(self, vector):
         if self.y != None and self.x != None:
-            self.x += v.x
-            self.y += v.y
+            self.x += vector.x
+            self.y += vector.y
         else:
-            self.x = v.x
-            self.y = v.y
+            self.x = vector.x
+            self.y = vector.y
 
     def dist(self, vector):
         return math.sqrt(math.pow(vector.x - self.x, 2) + math.pow(vector.y - self.y, 2))
@@ -55,22 +64,23 @@ class vector():
 
     # unit vector * magnitude = desired magnitude 
     def setMag(self, magnitude):
-        if self.mag != None:
-            self.mag = self.normalize() * magnitude
-        else:
-            self.mag = magnitude
+        pass 
+
     def calc_magnitude(self):
         return math.sqrt(math.pow(self.x, 2) + math.pow(self.y, 2))
     
     # scale vector to have a magnitude of 1 
     def normalize(self):
-        self.x = self.x / self.calc_magnitude()
-        self.y = self.y / self.calc_magnitude()
+        if self.x != None or self.y != None:
+            self.x = self.x / self.calc_magnitude()
+            self.y = self.y / self.calc_magnitude()
+        else:
+            self.x = 1
+            self.y = 1
     
-    def limit(self, magnitude):
-        pass 
+    def limit(self, limit):
+        pass
     
-
 
 class Boid:
     def __init__(self):
@@ -89,6 +99,9 @@ class Boid:
         self.maxspeed = 4
         self.maxforce = 0.1
 
+    def applyForce(self, force):
+        self.acceleration.x = force
+        self.acceleration.y = force
     
     def draw(self):
         if self.position.x > SCREEN_WIDTH:
@@ -125,11 +138,14 @@ class Boid:
             steering.setMag(self.maxspeed)
             steering.sub(self.velocity)
             steering.limit(self.maxforce)
-        
+
         return steering
 
     def flock(self, boids):
         alignment = self.align(boids)
+        self.acceleration = alignment
+
+        print(self.acceleration.x)
 
 def main():
 
