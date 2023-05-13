@@ -12,6 +12,11 @@ SCREEN_WIDTH, SCREEN_HEIGHT = device_screen.current_w-100, device_screen.current
 
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+
+
+# # Update the display
+# pygame.display.update()
+
 # two-dimensional vector class
 class vector():
     def __init__(self, x=0, y=0):
@@ -26,7 +31,12 @@ class vector():
         y = math.sin(angle)
 
         return vector(x, y)
+    # difference of two vectors returned as new vector
+    def subtract(vector1, vector2):
+        x = vector2.x - vector1.x
+        y = vector2.y - vector1.y
 
+        return vector(x, y)
     def sub(self, vector):
         self.x -= vector.x
         self.y -= vector.y
@@ -117,10 +127,38 @@ class Boid:
             steering.limit(self.maxforce)
         
         return steering
+
+    def separation(self, boids):
+        avoidance_radius = 100
+        steering = vector()
+
+        sum = vector()
+
+        total = 0 
+
+        for boid in boids:
+            distance = vector.dist(self.position, boid.position)
+            
+            if distance > 0 and distance < avoidance_radius:
+                
+                diff = vector.subtract(boid.position,self.position )
+                diff.div(distance)
+                steering.add(diff)
+                total += 1
+        
+        if total > 0:
+
+            steering.div(total)
+            steering.setMag(self.maxspeed)
+            steering.sub(self.velocity)
+            steering.limit(self.maxforce)     
+
+        return steering
        
     def flock(self, boids):
-        alignment = self.align(boids)
-        self.acceleration = alignment       # F = MA -> A = F
+        # alignment = self.align(boids)
+        separation = self.separation(boids)
+        self.acceleration = separation       # F = MA -> A = F
 
 def main():
 
@@ -129,7 +167,7 @@ def main():
     run = True 
 
     boids = []
-    for boid in range(300):
+    for boid in range(100):
         boids.append(Boid())
 
     while run:
