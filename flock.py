@@ -1,6 +1,7 @@
 import pygame
 import random
 import math 
+import json
 
 # Initialize Pygame
 pygame.init()
@@ -12,10 +13,10 @@ SCREEN_WIDTH, SCREEN_HEIGHT = device_screen.current_w-100, device_screen.current
 
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+SPRITES = {}
 
-
-# # Update the display
-# pygame.display.update()
+with open("sprites.json", "r") as read_file:
+    SPRITES = json.loads(read_file.read())
 
 # two-dimensional vector class
 class vector():
@@ -85,10 +86,9 @@ class Boid:
         self.acceleration = vector(0,0)
     
         self.img = pygame.transform.scale(pygame.image.load('Penguins/TenderBud/idle/0.png'), (15,15))
-        self.width = self.img.get_width()
-        self.height = self.img.get_height()
+        self.animation_index = 0
         
-        self.maxspeed = 4
+        self.maxspeed = 5
         self.maxforce = 0.2
 
     def draw(self):
@@ -100,15 +100,51 @@ class Boid:
             self.position.y = 0
         elif self.position.y < 0 :
             self.position.y = SCREEN_HEIGHT
+        
+        self.animation_index += 1
+        
+        if self.velocity.x > 0 and self.velocity.y > 0:
+            img_path = SPRITES["walk_NE"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+
+        elif self.velocity.x < 0 and self.velocity.y < 0:
+            img_path = SPRITES["walk_SW"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+
+        elif self.velocity.x > 0 and self.velocity.y < 0:
+            img_path = SPRITES["walk_SE"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+
+        elif self.velocity.x < 0 and self.velocity.y > 0:
+            img_path = SPRITES["walk_NW"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))    
+
+        elif self.velocity.x == 0 and self.velocity.y > 0:
+            img_path = SPRITES["walk_N"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+        
+        elif self.velocity.x == 0 and self.velocity.y < 0:
+            img_path = SPRITES["walk_S"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+
+        elif self.velocity.x < 0 and self.velocity.y == 0:
+            img_path = SPRITES["walk_W"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
+
+        elif self.velocity.x > 0 and self.velocity.y == 0:
+            img_path = SPRITES["walk_E"][self.animation_index % 4]
+            self.img = pygame.transform.scale(pygame.image.load(img_path), (15,15))
 
         SCREEN.blit(self.img ,(self.position.x, self.position.y))
+        
 
     def update(self):
         self.position.add(self.velocity)
         self.velocity.add(self.acceleration)
+        self.velocity.limit(self.maxspeed)
 
     def align(self, boids):
-        perception = 50
+        perception = 100
         steering = vector()
         total = 0 
 
@@ -127,13 +163,31 @@ class Boid:
             steering.limit(self.maxforce)
         
         return steering
+    
+    def cohesion(self, boids):
+        perception = 50
+        steering = vector()
+        total = 0 
 
-    def separation(self, boids):
+        for boid in boids:
+            distance = vector.dist(self.position, boid.position)
+            
+            if distance > 0 and distance < perception:
+                steering.add(boid.position)
+                total += 1
+        
+        if total > 0:
+            steering.div(total)
+            steering.sub(self.position)
+            steering.setMag(self.maxspeed)
+            steering.sub(self.velocity)
+            steering.limit(self.maxforce)
+        
+        return steering
+
+    def avoidance(self, boids):
         avoidance_radius = 100
         steering = vector()
-
-        sum = vector()
-
         total = 0 
 
         for boid in boids:
@@ -156,9 +210,12 @@ class Boid:
         return steering
        
     def flock(self, boids):
-        # alignment = self.align(boids)
-        separation = self.separation(boids)
-        self.acceleration = separation       # F = MA -> A = F
+        alignment = self.align(boids)
+        cohesion = self.cohesion(boids)
+        separation = self.avoidance(boids)
+        self.acceleration.add(alignment)
+        self.acceleration.add(cohesion)      # F = MA -> A = F
+        self.acceleration.add(separation)
 
 def main():
 

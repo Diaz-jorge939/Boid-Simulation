@@ -1,0 +1,43 @@
+{
+    "walk_NE" : ["Penguins/TenderBud/walk_NE/0.png", 
+        "Penguins/TenderBud/walk_NE/1.png", 
+        "Penguins/TenderBud/walk_NE/2.png",
+        "Penguins/TenderBud/walk_NE/3.png"],
+
+    "walk_NW" : ["Penguins/TenderBud/walk_NW/0.png", 
+        "Penguins/TenderBud/walk_NW/1.png", 
+        "Penguins/TenderBud/walk_NW/2.png",
+        "Penguins/TenderBud/walk_NW/3.png"],
+
+    "walk_SE" : ["Penguins/TenderBud/walk_SE/0.png", 
+        "Penguins/TenderBud/walk_SE/1.png", 
+        "Penguins/TenderBud/walk_SE/2.png",
+        "Penguins/TenderBud/walk_SE/3.png"],
+
+    "walk_SW" : ["Penguins/TenderBud/walk_SW/0.png", 
+        "Penguins/TenderBud/walk_SW/1.png", 
+        "Penguins/TenderBud/walk_SW/2.png",
+        "Penguins/TenderBud/walk_SW/3.png"],
+
+    "walk_W" : ["Penguins/TenderBud/walk_W/0.png", 
+        "Penguins/TenderBud/walk_W/1.png", 
+        "Penguins/TenderBud/walk_W/2.png",
+        "Penguins/TenderBud/walk_W/3.png"],
+
+    "walk_E" : ["Penguins/TenderBud/walk_E/0.png", 
+        "Penguins/TenderBud/walk_E/1.png", 
+        "Penguins/TenderBud/walk_E/2.png",
+        "Penguins/TenderBud/walk_E/3.png'"],
+
+    "walk_N" : ["Penguins/TenderBud/walk_N/0.png", 
+        "Penguins/TenderBud/walk_N/1.png", 
+        "Penguins/TenderBud/walk_N/2.png",
+        "Penguins/TenderBud/walk_N/3.png"],
+
+    "walk_S" : ["Penguins/TenderBud/walk_S/0.png", 
+        "Penguins/TenderBud/walk_S/1.png", 
+        "Penguins/TenderBud/walk_S/2.png",
+        "Penguins/TenderBud/walk_S/3.png"],
+
+    "IDLE" : "Penguins/TenderBud/idle/0.png"
+}
